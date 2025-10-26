@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Zap, Shield, BarChart3, ArrowRight, CheckCircle, Star, Globe, Lock, Rocket, Users, TrendingUp, Cpu } from 'lucide-react';
-// import Navbar from '@/components/Navbar';
+import Navbar from '@/components/Navbar';
 // import Footer from '@/components/Footer';
 // import * as dotenv from 'dotenv';
 // dotenv.config();
@@ -12,6 +12,9 @@ export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
   const [currentFeature, setCurrentFeature] = useState(0);
 
+  const themeCtx = useContext(ThemeContext) || {};
+  const darkMode = themeCtx.darkMode ?? (typeof window !== "undefined" && document.documentElement.classList.contains("dark"));
+  
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -47,7 +50,6 @@ export default function LandingPage() {
     }
   ];
 
-  // Feature carousel auto-rotate
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentFeature((prev) => (prev + 1) % features.length);
@@ -55,94 +57,33 @@ export default function LandingPage() {
     return () => clearInterval(interval);
   }, [features.length]);
 
-  const stats = [
-    { number: '10M+', label: 'Links Shortened' },
-    { number: '500K+', label: 'Active Users' },
-    { number: '99.9%', label: 'Uptime' },
-    { number: '150+', label: 'Countries' },
-  ];
-
   const testimonials = [
     {
       name: "Jay Sarkar",
       role: "Marketing Director",
-      company: "TechFlow Inc",
+      company: "Infocare",
       content: "Shortly increased our campaign CTR by 47%. The analytics helped us understand our audience better than ever.",
-      avatar: "SC"
+      avatar: "JS"
     },
     {
       name: "Maran Reddy",
       role: "Growth Lead",
-      company: "StartupXYZ",
+      company: "StockPro",
       content: "The API integration was seamless. We shortened 50K+ links in our first month with zero downtime.",
-      avatar: "MR"
+      avatar: "VR"
     },
     {
       name: "Astha Sharma",
       role: "Social Media Manager",
-      company: "Creative Agency Co",
+      company: "Creatico",
       content: "Our team loves the custom domains and branded links. It's made our social media campaigns much more professional.",
-      avatar: "EW"
-    }
-  ];
-
-  const pricingPlans = [
-    {
-      name: "Starter",
-      price: "$0",
-      period: "forever",
-      description: "Perfect for individuals and small projects",
-      popular: false,
-      features: [
-        "1,000 links/month",
-        "Basic analytics",
-        "Custom domains",
-        "30-day history",
-        "Standard support"
-      ],
-      cta: "Get Started"
-    },
-    {
-      name: "Professional",
-      price: "$19",
-      period: "per month",
-      description: "Everything you need for growing businesses",
-      popular: true,
-      features: [
-        "10,000 links/month",
-        "Advanced analytics",
-        "Custom branding",
-        "1-year history",
-        "Priority support",
-        "API access",
-        "Team collaboration"
-      ],
-      cta: "Start Free Trial"
-    },
-    {
-      name: "Enterprise",
-      price: "$49",
-      period: "per month",
-      description: "For large organizations with custom needs",
-      popular: false,
-      features: [
-        "Unlimited links",
-        "Enterprise analytics",
-        "White-label solutions",
-        "Unlimited history",
-        "24/7 dedicated support",
-        "Advanced API",
-        "SAML/SSO integration",
-        "Custom SLAs"
-      ],
-      cta: "Contact Sales"
+      avatar: "AS"
     }
   ];
 
   if (!mounted) {
     return (
       <div className="min-h-screen flex flex-col">
-        {/* <Navbar /> */}
         <main className="flex-1 flex items-center justify-center">
           <div className="animate-pulse text-lg">Loading...</div>
         </main>
