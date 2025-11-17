@@ -2,110 +2,108 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { headers } from "next/headers";
 
-// --- Helper to extract visitor details ---
 async function getVisitorInfo() {
-  const h =await headers();
-  const userAgent = h.get("user-agent") || "Unknown";
+  const h = await headers();
+  const ua = h.get("user-agent") || "";
 
-  // ✅ Detect device type
-  const device = /mobile/i.test(userAgent)
+  const device = /mobile/i.test(ua)
     ? "Mobile"
-    : /tablet/i.test(userAgent)
+    : /tablet/i.test(ua)
     ? "Tablet"
     : "Desktop";
 
-  // ✅ Detect OS
-  let os = "Unknown";
-  if (/windows/i.test(userAgent)) os = "Windows";
-  else if (/mac/i.test(userAgent)) os = "MacOS";
-  else if (/linux/i.test(userAgent)) os = "Linux";
-  else if (/android/i.test(userAgent)) os = "Android";
-  else if (/ios|iphone|ipad/i.test(userAgent)) os = "iOS";
+  const os =
+    /windows/i.test(ua) ? "Windows" :
+    /mac/i.test(ua) ? "MacOS" :
+    /linux/i.test(ua) ? "Linux" :
+    /android/i.test(ua) ? "Android" :
+    /ios|iphone|ipad/i.test(ua) ? "iOS" :
+    "Unknown";
 
-  // ✅ Detect browser
-  let browser = "Unknown";
-  if (/chrome|crios/i.test(userAgent)) browser = "Chrome";
-  else if (/firefox|fxios/i.test(userAgent)) browser = "Firefox";
-  else if (/safari/i.test(userAgent)) browser = "Safari";
-  else if (/edg/i.test(userAgent)) browser = "Edge";
-  else if (/opr\//i.test(userAgent)) browser = "Opera";
+  const browser =
+    /chrome|crios/i.test(ua) ? "Chrome" :
+    /firefox|fxios/i.test(ua) ? "Firefox" :
+    /safari/i.test(ua) ? "Safari" :
+    /edg/i.test(ua) ? "Edge" :
+    /opr/i.test(ua) ? "Opera" :
+    "Unknown";
 
-  // ✅ Get IP + Referrer
   const ip =
-    h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    h.get("x-forwarded-for")?.split(",")[0] ||
     h.get("x-real-ip") ||
     "Unknown";
 
-  const referrer = h.get("referer") || "Direct";
+  console.log("🔍 IP Detection:", {
+    "x-forwarded-for": h.get("x-forwarded-for"),
+    "x-real-ip": h.get("x-real-ip"),
+    "detected-ip": ip
+  });
 
-  // ✅ Get location via IP
   let location = "Unknown";
-  try {
-    const res = await fetch(`https://ipapi.co/${ip}/json/`, { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      if (!data.error) {
-        location = `${data.city || "Unknown"}, ${data.country_name || "Unknown"}`;
+  
+  if (ip === "Unknown" || ip === "::1" || ip === "127.0.0.1") {
+    console.warn("⚠️ Cannot lookup location: IP is localhost or unknown");
+  } else {
+    try {
+      const apiUrl = `http://api.ipapi.com/api/${ip}?access_key=${process.env.IPAPI_KEY}&fields=country_name`;
+      console.log("📡 Calling IP API:", apiUrl.replace(process.env.IPAPI_KEY, "***KEY***"));
+
+      const res = await fetch(apiUrl, { cache: "no-store" });
+      
+      console.log("📥 API Response Status:", res.status, res.statusText);
+
+      if (res.ok) {
+        const data = await res.json();
+        console.log("📦 API Response Data:", data);
+        
+        location = data.country_name || "Unknown";
+        console.log("✅ Location set to:", location);
+      } else {
+        const errorText = await res.text();
+        console.error("❌ API Error Response:", errorText);
       }
+    } catch (err) {
+      console.error("❌ Location lookup failed:", err.message);
+      console.error("Stack trace:", err.stack);
     }
-  } catch (err) {
-    console.warn("⚠️ Location lookup failed:", err.message);
   }
 
-  return { device, os, browser, location, referrer };
-}
-
-// --- 404 Component ---
-function NotFound({ shorturl }) {
-  return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>404 - Short URL Not Found</h1>
-      <p>
-        The short URL <strong>{shorturl}</strong> does not exist.
-      </p>
-      <a href={process.env.NEXT_PUBLIC_HOST || "/"}>Go Home</a>
-    </div>
-  );
+  return { 
+    device, 
+    os, 
+    browser, 
+    location, 
+    referrer: h.get("referer") || "Direct" 
+  };
 }
 
 export default async function Page({ params }) {
   const { shorturl } = await params;
-  const cleanShorturl = shorturl?.replace(/\//g, "").trim();
-  if (!cleanShorturl) redirect("/");
+  const clean = shorturl.replace(/\//g, "");
 
-  // ✅ Find URL
-  let doc;
-  try {
-    doc = await prisma.url.findUnique({ where: { shorturl: cleanShorturl } });
-  } catch (error) {
-    console.error("❌ DB error:", error);
-    redirect("/");
-  }
+  const urlEntry = await prisma.url.findUnique({
+    where: { shorturl: clean }
+  });
 
-  if (!doc) {
-    console.warn(`⚠️ No URL found for ${cleanShorturl}`);
-    return <NotFound shorturl={cleanShorturl} />;
-  }
+  if (!urlEntry) redirect("/404");
 
-  // ✅ Collect visitor info
   const visitor = await getVisitorInfo();
+  
+  console.log("👤 Visitor Info:", visitor);
 
-  // ✅ Fire & forget logging (non-blocking)
-  fetch(`${process.env.NEXT_PUBLIC_HOST}/api/track-visit`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      urlId: doc.id,
+  await prisma.visit.create({
+    data: {
+      urlId: urlEntry.id,
       device: visitor.device,
-      os: visitor.os,
       browser: visitor.browser,
+      os: visitor.os,
       location: visitor.location,
-      referrer: visitor.referrer,
-    }),
-  }).catch((err) => console.error("⚠️ Visit tracking failed:", err));
+      referrer: visitor.referrer
+    }
+  });
 
-  // ✅ Redirect to actual link
-  let target = doc.url.trim();
-  if (!/^https?:\/\//i.test(target)) target = "https://" + target;
+  let target = urlEntry.url;
+  if (!target.startsWith("http")) target = "https://" + target;
+
   redirect(target);
 }
