@@ -16,8 +16,8 @@ model Url {
 }
 
 model Visit {
-  id        String   @id @default(auto()) @map("_id") 
-  urlId     String  @db.ObjectId
+  id        String   @id @default(cuid()) @map("_id")
+  urlId     String
   device    String
   location  String
   browser   String
