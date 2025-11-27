@@ -1,96 +1,226 @@
 'use client';
 
-import Link from "next/link";
-import React, { useState } from "react";
-import { nanoid } from "nanoid";
-import toast, { Toaster } from "react-hot-toast";
-import { useUser } from "@clerk/nextjs";
+import { useState } from 'react';
+import { Link2, Copy, Check, ArrowRight, Zap, Shield, BarChart3 } from 'lucide-react';
+import { nanoid } from 'nanoid';
+import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Shorten() {
-    const [url, setUrl] = useState("");
-    const [shorturl, setShorturl] = useState("");
-    const [generated, setGenerated] = useState("");
-    const [error, setError] = useState("");
+export default function ShortenPage() {
+    const [url, setUrl] = useState('');
+    const [shortUrl, setShortUrl] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [copied, setCopied] = useState(false);
 
-    const { isSignedIn } = useUser();
-
-    const generate = async () => {
-        setError("");
-        setGenerated("");
-
-        // ✅ Check if user is signed in
-        if (!isSignedIn) {
-            toast.error("⚠️ Please log in before shortening URLs");
-            return;
-        }
-
-        const finalShort = shorturl.trim() || nanoid(6);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
 
         try {
-            const response = await fetch("/api/generate", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url, shorturl: finalShort }),
-                credentials: "include",
+            const response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    url: url,
+                    shorturl: nanoid(6), // Generate a random 6-character ID
+                }),
             });
 
-            const result = await response.json();
+            const data = await response.json();
 
-            if (result.success) {
-                setGenerated(`${window.location.origin}/${finalShort}`);
-                setError("");
+            if (response.ok) {
+                setShortUrl(`${window.location.origin}/${data.shorturl}`);
+                toast.success('Link shortened successfully!');
             } else {
-                setError(result.message || "Something went wrong. Please try again.");
+                toast.error(data.error || 'Something went wrong');
             }
-        } catch (err) {
-            console.error(err);
-            setError("Something went wrong. Please try again.");
+        } catch (error) {
+            toast.error('Failed to shorten link');
+        } finally {
+            setLoading(false);
         }
     };
 
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(shortUrl);
+        setCopied(true);
+        toast.success('Copied to clipboard!');
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     return (
-        <div className="mx-auto max-w-lg bg-purple-100 my-16 p-8 rounded-lg flex flex-col gap-4">
-            <Toaster position="top-center" reverseOrder={false} />
+        <div className="min-h-screen bg-background flex flex-col pt-24">
 
-            <h1 className="font-bold text-2xl">Generate your short URLs</h1>
-
-            <div className="flex flex-col gap-2">
-                <input
-                    type="text"
-                    value={url}
-                    className="px-4 py-2 focus:outline-purple-600 rounded-md"
-                    placeholder="Enter your URL"
-                    onChange={(e) => setUrl(e.target.value)}
-                />
-
-                <input
-                    type="text"
-                    value={shorturl}
-                    className="px-4 py-2 focus:outline-purple-600 rounded-md"
-                    placeholder="Enter your preferred short URL text (optional)"
-                    onChange={(e) => setShorturl(e.target.value)}
-                />
-
-                <button
-                    onClick={generate}
-                    className="bg-purple-500 rounded-lg shadow-lg p-3 py-1 my-3 font-bold text-white"
+            {/* Hero Section */}
+            {/* Hero Section */}
+            <section className="container mx-auto px-6 py-12 text-center relative z-10">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
                 >
-                    Generate
-                </button>
+                    <h1 className="text-4xl md:text-6xl font-bold mb-6">
+                        Shorten Your Links, <br />
+                        <span className="text-primary">
+                            Expand Your Reach
+                        </span>
+                    </h1>
+                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
+                        The simplest way to track, manage, and share your URLs.
+                        Fast, secure, and completely free.
+                    </p>
+                </motion.div>
 
-                {error && <span className="text-red-600 font-semibold">{error}</span>}
+                {/* Shortener Form */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="max-w-3xl mx-auto relative z-10"
+                >
+                    <div className="w-full max-w-3xl mx-auto">
+                        <form onSubmit={handleSubmit} className="relative group">
+                            <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none z-10">
+                                <Link2 className="w-6 h-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                            </div>
+                            <motion.input
+                                whileFocus={{ scale: 1.01 }}
+                                type="url"
+                                placeholder="Paste your long URL here..."
+                                className="w-full pl-16 pr-[180px] py-6 bg-white dark:bg-white/5 border-2 border-primary/20 hover:border-primary/40 focus:border-primary rounded-full focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-lg placeholder:text-muted-foreground/60 shadow-xl shadow-primary/5"
+                                value={url}
+                                onChange={(e) => setUrl(e.target.value)}
+                                required
+                            />
+                            <div className="absolute inset-y-2 right-2">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    type="submit"
+                                    disabled={loading}
+                                    className="h-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 rounded-full font-semibold text-lg transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+                                >
+                                    {loading ? (
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <>
+                                            Shorten
+                                            <ArrowRight className="w-5 h-5 ml-2" />
+                                        </>
+                                    )}
+                                </motion.button>
+                            </div>
+                        </form>
+
+                        <AnimatePresence>
+                            {shortUrl && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                    animate={{ opacity: 1, height: 'auto', marginTop: 24 }}
+                                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                    className="overflow-hidden"
+                                >
+                                    <div className="p-4 bg-secondary/50 rounded-xl border border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+                                        <div className="flex items-center gap-3 overflow-hidden w-full">
+                                            <motion.div
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0"
+                                            >
+                                                <Check className="w-5 h-5 text-green-500" />
+                                            </motion.div>
+                                            <a
+                                                href={shortUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-lg font-medium text-primary hover:underline truncate"
+                                            >
+                                                {shortUrl}
+                                            </a>
+                                        </div>
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={copyToClipboard}
+                                            className={`flex items-center px-4 py-2 rounded-lg font-medium transition-all ${copied
+                                                ? 'bg-green-500 text-white shadow-lg shadow-green-500/20'
+                                                : 'bg-background border border-border hover:border-primary hover:text-primary'
+                                                }`}
+                                        >
+                                            {copied ? (
+                                                <>
+                                                    <Check className="w-4 h-4 mr-2" />
+                                                    Copied
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Copy className="w-4 h-4 mr-2" />
+                                                    Copy
+                                                </>
+                                            )}
+                                        </motion.button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </motion.div>
+            </section>
+
+            {/* Features / How it Works */}
+            <section className="container mx-auto px-6 py-20">
+                <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                    {[
+                        {
+                            icon: <Zap className="w-6 h-6" />,
+                            title: "Lightning Fast",
+                            desc: "Instant shortening with zero latency. Get your links ready in milliseconds."
+                        },
+                        {
+                            icon: <Shield className="w-6 h-6" />,
+                            title: "Secure & Reliable",
+                            desc: "Your data is protected with enterprise-grade encryption and 99.9% uptime."
+                        },
+                        {
+                            icon: <BarChart3 className="w-6 h-6" />,
+                            title: "Detailed Analytics",
+                            desc: "Track every click, device, and location in real-time on your dashboard."
+                        }
+                    ].map((item, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: i * 0.1 }}
+                            whileHover={{ y: -5 }}
+                            className="p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors text-center group"
+                        >
+                            <div className="w-12 h-12 mx-auto bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform">
+                                {item.icon}
+                            </div>
+                            <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                            <p className="text-muted-foreground text-sm">{item.desc}</p>
+                        </motion.div>
+                    ))}
+                </div>
+            </section>
+
+            {/* Background Elements */}
+            <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+                <motion.div
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+                    transition={{ duration: 8, repeat: Infinity }}
+                    className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl"
+                />
+                <motion.div
+                    animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
+                    transition={{ duration: 10, repeat: Infinity, delay: 2 }}
+                    className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl"
+                />
             </div>
-
-            {generated && (
-                <>
-                    <span className="font-bold text-lg">Your Link </span>
-                    <code>
-                        <Link target="_blank" href={generated}>
-                            {generated}
-                        </Link>
-                    </code>
-                </>
-            )}
         </div>
     );
 }

@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Toaster } from "react-hot-toast";
+import { ThemeProvider } from "../components/theme-provider";
 
 import { ClerkProvider } from "@clerk/nextjs";
 
@@ -17,23 +18,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Shortly",
-  description: "Shorten URLs easily and quickly",
+  title: "Shortlys",
+  description: "Short Links, Big Impact",
 };
 
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          {/* Navbar (with Clerk buttons moved here) */}
-          <Navbar />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {/* Navbar (with Clerk buttons moved here) */}
+            <Navbar />
 
-          <main>{children}</main>
-          <Toaster position="top-center" reverseOrder={false} />
+            <main>{children}</main>
+            <Toaster position="top-center" reverseOrder={false} />
 
-          {/* Optional Footer */}
-          <Footer />
+            {/* Optional Footer */}
+            <Footer />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

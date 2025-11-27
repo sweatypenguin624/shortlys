@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
-  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
+import { Link2, MousePointer2, MapPin, Smartphone, ExternalLink, ArrowUpRight, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
   const { user, isLoaded } = useUser();
@@ -35,22 +36,51 @@ export default function Dashboard() {
 
   if (!isLoaded || loading) {
     return (
-      <div className="h-screen flex items-center justify-center text-gray-500 text-lg">
-        Loading dashboard...
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-muted-foreground animate-pulse">Loading your dashboard...</p>
+        </div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="h-screen flex items-center justify-center text-gray-700 text-lg">
-        Please log in to view your dashboard.
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold text-foreground">Access Denied</h2>
+          <p className="text-muted-foreground">Please log in to view your dashboard.</p>
+        </div>
       </div>
     );
   }
 
   const username = user.firstName || user.username || "User";
-  const COLORS = ["#06d6a0", "#118ab2", "#ef476f", "#ffd166", "#073b4c"];
+  // Modern Palette Colors
+  const COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#10b981"];
+
+  // Process visits for "Visits Over Time" chart
+  const visitsByDate = (analytics?.visits || []).reduce((acc, visit) => {
+    const date = new Date(visit.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    acc[date] = (acc[date] || 0) + 1;
+    return acc;
+  }, {});
+
+  const visitsData = Object.entries(visitsByDate)
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => new Date(a.date) - new Date(b.date)); // Sort by date if needed, though keys might not be sorted
+
+  // Ensure we have at least some data points for the chart to look good
+  if (visitsData.length === 0) {
+    // Add some dummy empty data for visualization if no visits
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      visitsData.push({ date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), count: 0 });
+    }
+  }
 
   // Helper: Convert analytics objects into chart data
   const toChartData = (obj) =>
@@ -61,127 +91,174 @@ export default function Dashboard() {
   const browserData = toChartData(analytics?.browserStats);
   const osData = toChartData(analytics?.osStats);
 
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-card border border-border p-3 rounded-lg shadow-xl">
+          <p className="font-medium text-foreground">{label || payload[0].name}</p>
+          <p className="text-primary text-sm">
+            {payload[0].value} visits
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
-      {/* 👋 Header */}
-      <section className="h-screen flex items-center justify-center">
-        <h1 className="text-6xl md:text-8xl font-thin text-center">
-          👋 Hello, {username}
-        </h1>
-      </section>
+    <div className="min-h-screen bg-background text-foreground pb-20">
+      {/* Header Section */}
+      <section className="relative pt-32 pb-12 px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
+        <div className="container mx-auto max-w-6xl relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8"
+          >
+            <div>
+              <h1 className="text-4xl font-bold mb-2">
+                Welcome back, <span className="text-primary">{username}</span>
+              </h1>
+              <p className="text-muted-foreground">Here's what's happening with your links today.</p>
+            </div>
+            <motion.a
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              href="/shorten"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-primary/20 flex items-center"
+            >
+              <Link2 className="w-4 h-4 mr-2" />
+              Create New Link
+            </motion.a>
+          </motion.div>
 
-      {/* User Links */}
-      <section className="max-w-5xl mx-auto py-12 px-4">
-        <h2 className="text-3xl font-semibold mb-6">Your Shortened Links</h2>
-        {urls.length === 0 ? (
-          <p className="text-gray-500">No links found yet.</p>
-        ) : (
-          <ul className="space-y-4">
-            {urls.map((url) => (
-              <li
-                key={url.id}
-                className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between"
+          {/* Quick Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {[
+              { title: "Total Links", value: urls.length, icon: <Link2 className="w-6 h-6" />, color: "text-primary", bg: "bg-primary/10", border: "hover:border-primary/30", badge: "+12%" },
+              { title: "Total Clicks", value: urls.reduce((acc, curr) => acc + (curr.visits?.length || 0), 0), icon: <MousePointer2 className="w-6 h-6" />, color: "text-yellow-600", bg: "bg-accent/10", border: "hover:border-accent/30", badge: "+5%" },
+              { title: "Countries Reached", value: locationData.length, icon: <MapPin className="w-6 h-6" />, color: "text-green-700", bg: "bg-secondary/20", border: "hover:border-secondary/30", badge: null },
+              { title: "Device Types", value: deviceData.length, icon: <Smartphone className="w-6 h-6" />, color: "text-blue-600", bg: "bg-blue-500/10", border: "hover:border-blue-500/30", badge: null }
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -5 }}
+                className={`bg-card/80 backdrop-blur-sm p-6 rounded-2xl border border-border/50 ${stat.border} transition-colors group shadow-sm`}
               >
-                <div>
-                  <p className="font-medium">{url.shorturl}</p>
-                  <a
-                    href={url.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline text-sm"
-                  >
-                    {url.url}
-                  </a>
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`p-3 ${stat.bg} ${stat.color} rounded-xl group-hover:scale-110 transition-transform`}>
+                    {stat.icon}
+                  </div>
+                  {stat.badge && (
+                    <span className={`text-xs font-medium ${stat.color} ${stat.bg.replace('10', '20')} px-2 py-1 rounded-full`}>{stat.badge}</span>
+                  )}
                 </div>
-                <p className="text-gray-400 text-sm mt-2 sm:mt-0">
-                  {url.visits?.length || 0} visits
-                </p>
-              </li>
+                <h3 className="text-3xl font-bold mb-1">{stat.value}</h3>
+                <p className="text-sm text-muted-foreground">{stat.title}</p>
+              </motion.div>
             ))}
-          </ul>
-        )}
+          </div>
+
+          {/* Visits Over Time Chart */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+            className="bg-card border border-border rounded-2xl p-6 shadow-sm mb-12"
+          >
+            <h3 className="text-lg font-semibold mb-6 flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2 text-primary" />
+              Visits Over Time
+            </h3>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={visitsData}>
+                  <defs>
+                    <linearGradient id="colorVisits" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '0.5rem' }}
+                    itemStyle={{ color: 'var(--foreground)' }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="count"
+                    stroke="var(--primary)"
+                    fillOpacity={1}
+                    fill="url(#colorVisits)"
+                    strokeWidth={2}
+                    animationDuration={2000}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* Recent Links List */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm"
+          >
+            <div className="p-6 border-b border-border">
+              <h3 className="text-lg font-semibold">Recent Links</h3>
+            </div>
+            {urls.length === 0 ? (
+              <div className="p-12 text-center text-muted-foreground">
+                No links created yet. Start sharing!
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {urls.map((url, index) => (
+                  <motion.div
+                    key={url.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.8 + (index * 0.1) }}
+                    className="p-4 hover:bg-secondary/30 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="font-medium text-foreground truncate">{url.shorturl}</span>
+                        <a href={`${window.location.origin}/${url.shorturl}`} target="_blank" className="text-muted-foreground hover:text-primary transition-colors">
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">{url.url}</p>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-foreground">{url.visits?.length || 0}</p>
+                        <p className="text-xs text-muted-foreground">Visits</p>
+                      </div>
+                      <a
+                        href={url.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <ArrowUpRight className="w-5 h-5" />
+                      </a>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </div>
       </section>
-
-      {/* Analytics Section */}
-      {analytics && (
-        <section className="max-w-6xl mx-auto py-16 px-4 grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* Device Type */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md">
-            <h3 className="text-xl font-semibold mb-4">Visits by Device</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={deviceData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  dataKey="value"
-                  label
-                >
-                  {deviceData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Locations */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md">
-            <h3 className="text-xl font-semibold mb-4">Visits by Location</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={locationData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value" fill="#118ab2" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Browser */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md">
-            <h3 className="text-xl font-semibold mb-4">Visits by Browser</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={browserData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  dataKey="value"
-                  label
-                >
-                  {browserData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* OS */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md">
-            <h3 className="text-xl font-semibold mb-4">Visits by Operating System</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={osData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value" fill="#ef476f" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-      )}
     </div>
   );
 }

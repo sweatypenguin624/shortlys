@@ -64,11 +64,11 @@ export async function GET(req) {
     return NextResponse.json({
       success: true,
       urls,
-      visitsCount: visits.length,
-      stats: {
-        devices,
+      analytics: {
+        visits,
+        deviceStats: devices,
         osStats,
-        locations,
+        locationStats: locations,
       },
     });
   } catch (error) {

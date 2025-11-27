@@ -1,26 +1,151 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@layer base {
+  :root {
+    /* Retro Theme (DaisyUI Inspired) */
+    --background: hsl(45 47% 80%);
+    /* #e4d8b4 - Beige */
+    --foreground: hsl(350 5% 15%);
+    /* #282425 - Dark Brown/Black */
+
+    --card: hsl(44 42% 86%);
+    /* #ece3ca - Lighter Beige */
+    --card-foreground: hsl(350 5% 15%);
+
+    --popover: hsl(44 42% 86%);
+    --popover-foreground: hsl(350 5% 15%);
+
+    --primary: hsl(358 76% 76%);
+    /* #ef9995 - Vintage Pink/Red */
+    --primary-foreground: hsl(350 5% 15%);
+
+    --secondary: hsl(145 28% 72%);
+    /* #a4cbb4 - Sage Green */
+    --secondary-foreground: hsl(350 5% 15%);
+
+    --muted: hsl(42 17% 70%);
+    --muted-foreground: hsl(350 5% 40%);
+
+    --accent: hsl(49 66% 76%);
+    /* #ebdc99 - Vintage Yellow */
+    --accent-foreground: hsl(350 5% 15%);
+
+    --destructive: hsl(0 84% 60%);
+    --destructive-foreground: hsl(0 0% 98%);
+
+    --border: hsl(42 17% 42%);
+    /* #7d7259 - Brownish Border */
+    --input: hsl(42 17% 42%);
+    --ring: hsl(358 76% 76%);
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark Mode - Coffee/Vintage Dark */
+    --background: hsl(20 14% 4%);
+    --foreground: hsl(45 47% 80%);
+
+    --card: hsl(24 10% 10%);
+    --card-foreground: hsl(45 47% 80%);
+
+    --popover: hsl(24 10% 10%);
+    --popover-foreground: hsl(45 47% 80%);
+
+    --primary: hsl(358 76% 76%);
+    --primary-foreground: hsl(350 5% 15%);
+
+    --secondary: hsl(145 28% 72%);
+    --secondary-foreground: hsl(350 5% 15%);
+
+    --muted: hsl(12 6.5% 15.1%);
+    --muted-foreground: hsl(24 5.4% 63.9%);
+
+    --accent: hsl(49 66% 76%);
+    --accent-foreground: hsl(350 5% 15%);
+
+    --destructive: hsl(0 62.8% 30.6%);
+    --destructive-foreground: hsl(60 9.1% 97.8%);
+
+    --border: hsl(12 6.5% 15.1%);
+    --input: hsl(12 6.5% 15.1%);
+    --ring: hsl(358 76% 76%);
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass {
+  background: rgba(17, 24, 39, 0.7);
+  /* Gray 900 with opacity */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.dark .glass-card {
+  background: rgba(30, 41, 59, 0.4);
+  /* Slate 800 with opacity */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 4px;
+  opacity: 0.5;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
 }
