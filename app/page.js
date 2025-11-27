@@ -95,10 +95,10 @@ export default function LandingPage() {
 
           {/* Dashboard Preview */}
           <motion.div
-            initial={{ opacity: 0, y: 40, rotateX: 20 }}
-            animate={{ opacity: 1, y: 0, rotateX: 0 }}
-            transition={{ delay: 0.4, duration: 1, type: "spring" }}
-            className="relative mx-auto max-w-5xl perspective-1000"
+            initial={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 1 }}
+            className="relative mx-auto max-w-5xl"
           >
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-card/50 backdrop-blur-xl group hover:shadow-primary/10 transition-shadow duration-500">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-accent/5 pointer-events-none"></div>
@@ -118,7 +118,7 @@ export default function LandingPage() {
                   width={1200}
                   height={675}
                   className="w-full h-auto object-cover transform group-hover:scale-[1.02] transition-transform duration-700"
-                  priority
+                  unoptimized
                 />
               </div>
             </div>
