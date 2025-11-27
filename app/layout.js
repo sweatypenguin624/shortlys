@@ -1,11 +1,11 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import { Toaster } from "react-hot-toast";
-import { ThemeProvider } from "../components/theme-provider";
-
-import { ClerkProvider } from "@clerk/nextjs";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { ThemeProvider } from "next-themes";
+import { Toaster } from 'react-hot-toast';
+import { ClerkProvider } from '@clerk/nextjs'
+import { Analytics } from "@vercel/analytics/react"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,29 +18,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Shortlys",
-  description: "Short Links, Big Impact",
+  title: "Shortlys | Premium URL Shortener",
+  description: "Shorten, track, and manage your links with style.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
           >
-            {/* Navbar (with Clerk buttons moved here) */}
             <Navbar />
-
-            <main>{children}</main>
-            <Toaster position="top-center" reverseOrder={false} />
-
-            {/* Optional Footer */}
+            <main className="flex-grow pt-20">
+              {children}
+            </main>
             <Footer />
+            <Toaster position="bottom-center" />
+            <Analytics />
           </ThemeProvider>
         </body>
       </html>
