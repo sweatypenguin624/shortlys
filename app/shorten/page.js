@@ -5,15 +5,40 @@ import { Link2, Copy, Check, ArrowRight, Zap, Shield, BarChart3 } from 'lucide-r
 import { nanoid } from 'nanoid';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUser, useClerk } from '@clerk/nextjs';
 
 export default function ShortenPage() {
+    const { isSignedIn } = useUser();
+    const { openSignIn } = useClerk();
     const [url, setUrl] = useState('');
     const [shortUrl, setShortUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
 
+    const handleInputFocus = (e) => {
+        if (!isSignedIn) {
+            e.target.blur();
+            toast.error("Please log in to shorten URLs", {
+                icon: '🔒',
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                },
+            });
+            openSignIn();
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!isSignedIn) {
+            toast.error("Please log in to shorten URLs");
+            openSignIn();
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -92,6 +117,7 @@ export default function ShortenPage() {
                                 className="w-full pl-16 pr-[180px] py-6 bg-white dark:bg-white/5 border-2 border-primary/20 hover:border-primary/40 focus:border-primary rounded-full focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-lg placeholder:text-muted-foreground/60 shadow-xl shadow-primary/5"
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
+                                onFocus={handleInputFocus}
                                 required
                             />
                             <div className="absolute inset-y-2 right-2">

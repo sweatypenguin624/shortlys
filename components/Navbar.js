@@ -6,6 +6,8 @@ import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@cl
 import { useState, useEffect } from 'react';
 
 import { useTheme } from "next-themes";
+import confetti from 'canvas-confetti';
+import toast from 'react-hot-toast';
 
 import Logo from './Logo';
 
@@ -28,9 +30,28 @@ export default function Navbar() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const NavLink = ({ href, children }) => (
+  const handlePricingClick = (e) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+    toast.success("It's completely free! No hidden charges.", {
+      icon: '🎉',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      },
+    });
+  };
+
+  const NavLink = ({ href, children, onClick }) => (
     <Link
       href={href}
+      onClick={onClick}
       className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors relative group"
     >
       {children}
@@ -41,8 +62,8 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-          ? 'bg-background/80 backdrop-blur-md border-b border-border/50 py-3 shadow-sm'
-          : 'bg-transparent py-5'
+        ? 'bg-background/80 backdrop-blur-md border-b border-border/50 py-3 shadow-sm'
+        : 'bg-transparent py-5'
         }`}
     >
       <div className="container mx-auto px-6 flex items-center justify-between">
@@ -60,8 +81,8 @@ export default function Navbar() {
           </SignedIn>
           <SignedOut>
             <NavLink href="/">Home</NavLink>
-            <NavLink href="/#features">Features</NavLink>
-            <NavLink href="/#pricing">Pricing</NavLink>
+            <NavLink href="/#powerful-features">Features</NavLink>
+            <NavLink href="#" onClick={handlePricingClick}>Pricing</NavLink>
           </SignedOut>
         </div>
 
@@ -131,8 +152,8 @@ export default function Navbar() {
           </SignedIn>
           <SignedOut>
             <Link href="/" className="text-foreground font-medium py-2" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-            <Link href="/#features" className="text-foreground font-medium py-2" onClick={() => setMobileMenuOpen(false)}>Features</Link>
-            <Link href="/#pricing" className="text-foreground font-medium py-2" onClick={() => setMobileMenuOpen(false)}>Pricing</Link>
+            <Link href="/#powerful-features" className="text-foreground font-medium py-2" onClick={() => setMobileMenuOpen(false)}>Features</Link>
+            <button className="text-foreground font-medium py-2 text-left" onClick={handlePricingClick}>Pricing</button>
             <div className="flex flex-col space-y-3 pt-2 border-t border-border">
               <SignInButton mode="modal">
                 <button className="w-full text-center py-2 text-muted-foreground hover:text-foreground">Sign In</button>

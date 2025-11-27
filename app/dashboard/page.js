@@ -121,7 +121,7 @@ export default function Dashboard() {
               <h1 className="text-4xl font-bold mb-2">
                 Welcome back, <span className="text-primary">{username}</span>
               </h1>
-              <p className="text-muted-foreground">Here's what's happening with your links today.</p>
+              <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your links today.</p>
             </div>
             <motion.a
               whileHover={{ scale: 1.05 }}

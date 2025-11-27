@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Shield, BarChart3, ArrowRight, CheckCircle, Star, Globe, Lock, Rocket, Users, TrendingUp, Cpu, Link as LinkIcon, MousePointerClick, Share2 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 import confetti from 'canvas-confetti';
 import toast from 'react-hot-toast';
@@ -111,10 +112,13 @@ export default function LandingPage() {
               </div>
               <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"></div>
-                <img
+                <Image
                   src="/dashboard-premium.png"
                   alt="Shortlys Dashboard Preview"
+                  width={1200}
+                  height={675}
                   className="w-full h-auto object-cover transform group-hover:scale-[1.02] transition-transform duration-700"
+                  priority
                 />
               </div>
             </div>
@@ -211,7 +215,7 @@ export default function LandingPage() {
       </section>
 
       {/* Free Forever Section */}
-      <section className="py-32 relative overflow-hidden">
+      <section id="powerful-features" className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none"></div>
         <div className="container mx-auto px-6 relative">
           <div className="max-w-4xl mx-auto text-center">
@@ -269,7 +273,7 @@ export default function LandingPage() {
                   whileTap={{ scale: 0.95 }}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-primary/40"
                 >
-                  Start Shortening Now
+                  Start Shortlying Now
                 </motion.button>
               </Link>
             </div>
