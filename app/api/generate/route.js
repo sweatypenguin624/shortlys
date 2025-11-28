@@ -1,6 +1,6 @@
 // app/api/generate/route.js
 import { NextResponse } from "next/server";
-import  prisma  from "@/lib/prisma"; // use named export
+import prisma from "@/lib/prisma"; // use named export
 import { getAuth } from "@clerk/nextjs/server";
 
 export async function POST(request) {
@@ -61,6 +61,8 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       message: "URL Generated Successfully",
+      shorturl, // ✅ Return the shorturl so the client can display it
+      url: fullUrl,
     });
   } catch (err) {
     console.error("❌ API Error:", err);

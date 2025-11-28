@@ -5,6 +5,7 @@ import { Link2, Copy, Check, ArrowRight, Zap, Shield, BarChart3 } from 'lucide-r
 import { nanoid } from 'nanoid';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+
 import { useUser, useClerk } from '@clerk/nextjs';
 
 export default function ShortenPage() {
@@ -36,6 +37,13 @@ export default function ShortenPage() {
         if (!isSignedIn) {
             toast.error("Please log in to shorten URLs");
             openSignIn();
+            return;
+        }
+
+        // Simple domain validation (must contain at least one dot)
+        // This allows youtube.com, www.google.com, etc.
+        if (!url.includes('.') || url.length < 4) {
+            toast.error("Please enter a valid URL (e.g., youtube.com)");
             return;
         }
 
@@ -112,7 +120,7 @@ export default function ShortenPage() {
                             </div>
                             <motion.input
                                 whileFocus={{ scale: 1.01 }}
-                                type="url"
+                                type="text"
                                 placeholder="Paste your long URL here..."
                                 className="w-full pl-16 pr-[180px] py-6 bg-white dark:bg-white/5 border-2 border-primary/20 hover:border-primary/40 focus:border-primary rounded-full focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-lg placeholder:text-muted-foreground/60 shadow-xl shadow-primary/5"
                                 value={url}
