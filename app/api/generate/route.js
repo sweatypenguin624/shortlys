@@ -38,7 +38,7 @@ export async function POST(request) {
       console.log("⚠️ URL already exists");
       return NextResponse.json({
         success: false,
-        message: "URL already exists",
+        message: "Alias already taken",
       });
     }
 

@@ -12,6 +12,7 @@ export default function ShortenPage() {
     const { isSignedIn } = useUser();
     const { openSignIn } = useClerk();
     const [url, setUrl] = useState('');
+    const [alias, setAlias] = useState('');
     const [shortUrl, setShortUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -41,7 +42,6 @@ export default function ShortenPage() {
         }
 
         // Simple domain validation (must contain at least one dot)
-        // This allows youtube.com, www.google.com, etc.
         if (!url.includes('.') || url.length < 4) {
             toast.error("Please enter a valid URL (e.g., youtube.com)");
             return;
@@ -57,7 +57,7 @@ export default function ShortenPage() {
                 },
                 body: JSON.stringify({
                     url: url,
-                    shorturl: nanoid(6), // Generate a random 6-character ID
+                    shorturl: alias.trim() || nanoid(6), // Use custom alias or generate random
                 }),
             });
 
@@ -66,8 +66,10 @@ export default function ShortenPage() {
             if (response.ok) {
                 setShortUrl(`${window.location.origin}/${data.shorturl}`);
                 toast.success('Link shortened successfully!');
+                setAlias(''); // Reset alias after success
             } else {
-                toast.error(data.error || 'Something went wrong');
+                // Show specific error message from API (e.g., "URL already exists")
+                toast.error(data.message || 'Something went wrong');
             }
         } catch (error) {
             toast.error('Failed to shorten link');
@@ -114,27 +116,44 @@ export default function ShortenPage() {
                     className="max-w-3xl mx-auto relative z-10"
                 >
                     <div className="w-full max-w-3xl mx-auto">
-                        <form onSubmit={handleSubmit} className="relative group">
-                            <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none z-10">
-                                <Link2 className="w-6 h-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <form onSubmit={handleSubmit} className="relative group flex flex-col gap-4">
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none z-10">
+                                    <Link2 className="w-6 h-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                </div>
+                                <motion.input
+                                    whileFocus={{ scale: 1.01 }}
+                                    type="text"
+                                    placeholder="Paste your long URL here..."
+                                    className="w-full pl-16 pr-6 py-6 bg-white dark:bg-white/5 border-2 border-primary/20 hover:border-primary/40 focus:border-primary rounded-full focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-lg placeholder:text-muted-foreground/60 shadow-xl shadow-primary/5"
+                                    value={url}
+                                    onChange={(e) => setUrl(e.target.value)}
+                                    onFocus={handleInputFocus}
+                                    required
+                                />
                             </div>
-                            <motion.input
-                                whileFocus={{ scale: 1.01 }}
-                                type="text"
-                                placeholder="Paste your long URL here..."
-                                className="w-full pl-16 pr-[180px] py-6 bg-white dark:bg-white/5 border-2 border-primary/20 hover:border-primary/40 focus:border-primary rounded-full focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-lg placeholder:text-muted-foreground/60 shadow-xl shadow-primary/5"
-                                value={url}
-                                onChange={(e) => setUrl(e.target.value)}
-                                onFocus={handleInputFocus}
-                                required
-                            />
-                            <div className="absolute inset-y-2 right-2">
+
+                            <div className="flex flex-col md:flex-row gap-4">
+                                <div className="relative flex-1">
+                                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none z-10">
+                                        <span className="text-muted-foreground font-medium">/</span>
+                                    </div>
+                                    <motion.input
+                                        whileFocus={{ scale: 1.01 }}
+                                        type="text"
+                                        placeholder="Custom alias (optional)"
+                                        className="w-full pl-10 pr-6 py-6 bg-white dark:bg-white/5 border-2 border-primary/20 hover:border-primary/40 focus:border-primary rounded-full focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-lg placeholder:text-muted-foreground/60 shadow-xl shadow-primary/5"
+                                        value={alias}
+                                        onChange={(e) => setAlias(e.target.value)}
+                                        maxLength={20}
+                                    />
+                                </div>
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     type="submit"
                                     disabled={loading}
-                                    className="h-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 rounded-full font-semibold text-lg transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-10 py-6 rounded-full font-semibold text-lg transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center whitespace-nowrap"
                                 >
                                     {loading ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
