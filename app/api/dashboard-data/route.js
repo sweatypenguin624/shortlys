@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { getAuth } from "@clerk/nextjs/server";
 
 export async function GET(req) {
   try {
-    const userId = "user_34EPZ8O8VmZt9nO1IlJudII0Yni"; // replace with session later
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
 
     console.log("📊 Dashboard API: Fetching data for user:", userId);
 
