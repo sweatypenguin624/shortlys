@@ -18,6 +18,7 @@ export async function GET(req) {
         id: true,
         url: true,
         shorturl: true,
+        qrCode: { select: { id: true, scanCount: true, label: true } },
         visits: {
           select: {
             id: true,
@@ -71,6 +72,7 @@ export async function GET(req) {
       urls,
       analytics: {
         visits,
+        qrScans: urls.reduce((total, url) => total + (url.qrCode?.scanCount || 0), 0),
         deviceStats: devices,
         osStats,
         locationStats: locations,

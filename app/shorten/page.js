@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Link2, Copy, Check, ArrowRight, Zap, Shield, BarChart3 } from 'lucide-react';
+import { Link2, Copy, Check, ArrowRight, Zap, Shield, BarChart3, QrCode } from 'lucide-react';
 import { nanoid } from 'nanoid';
+import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -14,6 +15,7 @@ export default function ShortenPage() {
     const [url, setUrl] = useState('');
     const [alias, setAlias] = useState('');
     const [shortUrl, setShortUrl] = useState('');
+    const [shortAlias, setShortAlias] = useState('');
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -65,6 +67,7 @@ export default function ShortenPage() {
 
             if (response.ok) {
                 setShortUrl(`${window.location.origin}/${data.shorturl}`);
+                setShortAlias(data.shorturl);
                 toast.success('Link shortened successfully!');
                 setAlias(''); // Reset alias after success
             } else {
@@ -214,6 +217,11 @@ export default function ShortenPage() {
                                                 </>
                                             )}
                                         </motion.button>
+                                        {shortAlias ? (
+                                            <Link href={`/qr?shorturl=${shortAlias}`} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground">
+                                                <QrCode className="h-4 w-4" /> QR
+                                            </Link>
+                                        ) : null}
                                     </div>
                                 </motion.div>
                             )}

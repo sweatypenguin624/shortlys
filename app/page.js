@@ -8,6 +8,7 @@ import Image from 'next/image';
 
 import confetti from 'canvas-confetti';
 import toast from 'react-hot-toast';
+import { QrFeatureSection } from '@/components/landing/QrFeatureSection';
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
@@ -213,6 +214,8 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      <QrFeatureSection />
 
       {/* Free Forever Section */}
       <section id="powerful-features" className="py-32 relative overflow-hidden">
