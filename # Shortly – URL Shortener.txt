@@ -1,0 +1,154 @@
+# Shortly – URL Shortener
+
+Shortly is a URL-shortening web application that allows users to convert long URLs into shorter, easy-to-share links. It also provides a dashboard to view link activity and visitor analytics.
+
+## Features
+
+- **URL Shortening:** Generate short links from long URLs.
+- **Custom Aliases:** Choose a custom alias for your shortened URL.
+- **User Authentication:** Sign-in and user authentication using Clerk.
+- **Visitor Tracking:** Record visitor information such as device, browser, operating system, country and referrer.
+- **Analytics Dashboard:** View link statistics, visit trends and visitor breakdowns.
+- **Link Management:** View shortened URLs and their visit counts.
+
+## Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| Next.js 15 | React framework and application routing |
+| React 19 | User interface |
+| Tailwind CSS | Styling |
+| Clerk | Authentication |
+| MongoDB | Database |
+| Prisma ORM | Database access |
+| Recharts | Analytics visualizations |
+| Framer Motion | UI animations |
+| Nanoid | Short ID generation |
+| Lucide React | Icons |
+
+## How It Works
+
+1. A user signs in and enters a long URL.
+2. The application generates a short identifier or accepts a custom alias.
+3. The URL and its short identifier are stored in MongoDB using Prisma.
+4. When someone visits the shortened link, the application looks up the corresponding original URL.
+5. Visitor information is recorded in the database.
+6. The visitor is redirected to the original destination.
+7. Users can view available link and visitor statistics on the dashboard.
+
+## Project Structure
+
+```text
+shortly/
+├── app/
+│   ├── [shorturl]/       # Dynamic short-link redirection
+│   ├── api/
+│   │   ├── analytics/
+│   │   ├── dashboard-data/
+│   │   ├── generate/
+│   │   ├── track-visit/
+│   │   └── user-urls/
+│   ├── dashboard/        # Analytics dashboard
+│   ├── shorten/          # URL shortening interface
+│   ├── layout.js
+│   ├── page.js
+│   └── globals.css
+├── components/           # Reusable UI components
+├── lib/                  # Shared utilities
+├── prisma/
+│   └── schema.prisma     # Database schema
+├── public/               # Static assets
+├── middleware.ts
+└── package.json
+```
+
+## Database Structure
+
+The application uses MongoDB with Prisma ORM.
+
+### Url
+
+Stores shortened URL information.
+
+- `id`: Unique database identifier.
+- `url`: Original destination URL.
+- `shorturl`: Unique shortened alias.
+- `userId`: ID of the user who created the URL.
+- `visits`: Associated visitor records.
+
+### Visit
+
+Stores information about visits to shortened URLs.
+
+- `id`: Unique visit identifier.
+- `urlId`: Associated URL identifier.
+- `device`: Visitor device information.
+- `location`: Visitor location information.
+- `browser`: Browser information.
+- `os`: Operating system information.
+- `referrer`: Referring source, if available.
+- `createdAt`: Visit timestamp.
+
+## Local Development Setup
+
+### Prerequisites
+
+Make sure you have the following installed:
+
+- Node.js
+- npm
+- Access to a MongoDB database
+- Clerk account and application credentials
+
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd shortly
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure Environment Variables
+
+Create a `.env` file in the project root.
+
+Obtain the required environment variable names and credentials from the project maintainer. Configure them according to the project's implementation.
+
+Do not commit your `.env` file or expose secret credentials in the repository.
+
+### 4. Generate Prisma Client
+
+```bash
+npx prisma generate
+```
+
+### 5. Run the Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Starts the development server |
+| `npm run build` | Generates Prisma Client and builds the application |
+| `npm run start` | Starts the production server |
+
+## Contributing
+
+Contributions are welcome!
+
+1. Fork the repository.
+2. Create a new branch for your changes.
+3. Make your changes and commit them.
+4. Push your branch to your fork.
+5. Open a Pull Request describing your contribution.
